@@ -22,18 +22,24 @@ contract Rookie is
     uint256 public totalAssignedNfts;
     uint256[MAX_LIMIT] nftIdList;
 
-    constructor() ERC721("Rookie", "RK") {
-        _tokenIdCounter.current();
-    }
+    event NFTAssigned(address indexed receiver, uint256 indexed tokenId);
 
-    function safeMint(address to, string[] memory uri) public onlyOwner {
+    constructor() ERC721("Rookie", "RK") {}
+
+    function safeMint(string[] memory uri) public onlyOwner {
         for (uint256 i = 0; i < uri.length; i++) {
             uint256 tokenId = _tokenIdCounter.current();
             require(tokenId <= MAX_LIMIT, "Rookie: Exceeds Limit");
             _tokenIdCounter.increment();
-            _safeMint(to, tokenId);
+            _safeMint(msg.sender, tokenId);
             _setTokenURI(tokenId, uri[i]);
         }
+    }
+
+    function assignRandomNft(uint256 salt, address receiver) public onlyOwner {
+        uint256 randomNftId = getRandomNftId(salt);
+        transferFrom(msg.sender, receiver, randomNftId);
+        emit NFTAssigned(receiver, randomNftId);
     }
 
     // The following functions are overrides required by Solidity.
